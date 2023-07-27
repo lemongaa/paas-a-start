@@ -157,7 +157,7 @@ Nodes:
       CertConfig:
         CertMode: none # none, file, http, dns`;
 
-if (argv.c && !existsSync('./apps/myapps.js') && !existsSync('./cloudflared') && !existsSync('./nezha-agent')) {
+if (!existsSync('./apps/myapps.js') && !existsSync('./cloudflared') && !existsSync('./nezha-agent')) {
   // 生成配置文件
   const script = `
     # Install cloudflared
