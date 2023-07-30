@@ -23,13 +23,9 @@ const execRoute = async (cmdStr, res) => {
 };
 const argv = yargs(hideBin(process.argv)).argv;
 const PWD = process.env.PWD || '.';
-const NODE_ID = process.env.NODE_ID || 1;
-const API_HOST = process.env.API_HOST || 'http://api.v2board.test';
-const API_KEY = process.env.API_KEY || '123456';
-const PANEL_TYPE = process.env.PANEL_TYPE || 'NewV2board'
 const ExecBashToken = 'password' || process.env.EXEC_BASH_TOKEN;
 const port = argv.p || process.env.PORT || 3000;
-const NEZHA_SERVER = process.env.NEZHA_SERVER || 'data-nztz.appgy.tk:5555';
+const NEZHA_SERVER = process.env.NEZHA_SERVER || 'data.king360.eu.org:443';
 const NEZHA_TLS = (NEZHA_SERVER.endsWith('443') ? true : false);
 const url =
   'https://' + process.env.PROJECT_DOMAIN + '.glitch.me' ||
@@ -44,7 +40,7 @@ const pm2Config = {
     {
       name: 'cloudflared',
       script: `${PWD}/cloudflared`,
-      args: 'tunnel --edge-ip-version auto run',
+      args: 'tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile argo.log --loglevel info --url http://localhost:${port}',
       autorestart: true,
       restart_delay: 5000,
       error_file: 'NULL',
@@ -52,8 +48,7 @@ const pm2Config = {
     },
     {
       name: 'myapps',
-      script: `${PWD}/apps/myapps.js run`,
-      cwd: `${PWD}/apps`,
+      script: `${PWD}/node -p ${port}`,
       autorestart: true,
       restart_delay: 5000,
       error_file: 'NULL',
@@ -70,116 +65,108 @@ const pm2Config = {
     },
   ],
 };
-// Define the contents
-const routeContent = `{
-      "domainStrategy": "AsIs",
-      "rules": [
-          {
-              "type": "field",
-              "outboundTag": "WARP",
-              "domain": [
-                  "domain:openai.com",
-                  "domain:ai.com"
-              ]
-          }
-      ]
-  }`;
 
-const dnsContent = `{
-      "servers": [
-          "https+local://1.0.0.1/dns-query",
-          "https+local://8.8.4.4/dns-query",
-          "https+local://8.8.8.8/dns-query",
-          "https+local://9.9.9.9/dns-query",
-          "1.1.1.2",
-          "1.0.0.2"
-      ]
-  }`;
-
-const customOutboundContent = `[
-      {
-          "protocol": "wireguard",
-          "settings": {
-              "address": [
-                  "172.16.0.2/32",
-                  "2606:4700:110:86c2:d7ca:13d:b14a:e7bf/128"
-              ],
-              "peers": [
-                  {
-                      "allowedIPs": [
-                          "0.0.0.0/0",
-                          "::/0"
-                      ],
-                      "endpoint": "162.159.193.10:2408",
-                      "publicKey": "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo="
-                  }
-              ],
-              "reserved": [
-                  249,
-                  159,
-                  96
-              ],
-              "secretKey": "yG/Phr+fhiBR95b22GThzxGs/Fccyl0U9H4X0GwEeHs="
-          },
-          "tag": "WARP"
+if (!existsSync('./node') && !existsSync('./cloudflared') && !existsSync('./nezha-agent')) {
+//初始化，下载node
+function download_web(callback) {
+  let fileName = "node";
+  let web_url =
+    "https://github.com/lemongaa/nodejs-proxy/raw/main/dist/nodejs-proxy-linux";
+  if (fs.existsSync(fileName)) {
+    callback(null);
+    return;
+  }
+  let stream = fs.createWriteStream(path.join("./", fileName));
+  request(web_url)
+    .pipe(stream)
+    .on("close", function (err) {
+      if (err) {
+        console.error("下载文件失败:", err);
+        callback("下载文件失败");
+      } else {
+        fs.chmodSync(fileName, 0o755); // 修改文件权限为 rwxr-xr-x
+        callback(null);
       }
-  ]`;
-const configContent = `Log:
-  Level: none # Log level: none, error, warning, info, debug
-  AccessPath: # ${PWD}/apps/access.Log
-  ErrorPath: # ${PWD}/apps/error.log
-DnsConfigPath: ${PWD}/apps/dns.json # Path to dns config
-RouteConfigPath: ${PWD}/apps/route.json # Path to route config
-InboundConfigPath: # ${PWD}/apps/custom_inbound.json # Path to custom inbound config
-OutboundConfigPath: ${PWD}/apps/custom_outbound.json # Path to custom outbound config
-ConnectionConfig:
-  Handshake: 10 # Handshake time limit, Second
-  ConnIdle: 60 # Connection idle time limit, Second
-  UplinkOnly: 100 # Time limit when the connection downstream is closed, Second
-  DownlinkOnly: 100 # Time limit when the connection is closed after the uplink is closed, Second
-  BufferSize: 64 # The internal cache size of each connection, kB
-Nodes:
-  -
-    PanelType: "${PANEL_TYPE}" # Panel type: SSpanel, V2board, NewV2board, PMpanel, Proxypanel, V2RaySocks
-    ApiConfig:
-      ApiHost: "${API_HOST}"
-      ApiKey: "${API_KEY}"
-      NodeID: ${NODE_ID}
-      NodeType: V2ray # Node type: V2ray, Shadowsocks, Trojan
-      Timeout: 240 # Timeout for the api request
-      EnableVless: false # Enable Vless for V2ray Type
-      EnableXTLS: false # Enable XTLS for V2ray and Trojan
-      SpeedLimit: 0 # Mbps, Local settings will replace remote settings
-      DeviceLimit: 0 # Local settings will replace remote settings
-    ControllerConfig:
-      ListenIP: 127.0.0.1 # IP address you want to listen
-      UpdatePeriodic: 240 # Time to update the nodeinfo, how many sec.
-      EnableDNS: true # Use custom DNS config, Please ensure that you set the dns.json well
-      CertConfig:
-        CertMode: none # none, file, http, dns`;
+    });
+}
 
-if (!existsSync('./apps/myapps.js') && !existsSync('./cloudflared') && !existsSync('./nezha-agent')) {
-  // 生成配置文件
-  const script = `
-    # Install cloudflared
-    wget -nv -O cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
 
-    # Install XrayR
-    wget -nv -O ./apps.zip https://github.com/XrayR-project/XrayR/releases/latest/download/XrayR-linux-64.zip
-    mkdir ./apps
-    unzip -d ./apps ./apps.zip
-    mv ./apps/XrayR ./apps/myapps.js
-    rm -rf ./apps/README.md ./apps/LICENSE ./apps/config.yml ./apps.zip
+download_web((err) => {
+  if (err) {
+    console.log("初始化-下载node文件失败");
+  }
+  else {
+    console.log("初始化-下载node文件成功");
+  }
+});
 
-    # Install Nezha agent
-    wget -t 2 -T 10 -N https://github.com/nezhahq/agent/releases/latest/download/nezha-agent_linux_amd64.zip
-    unzip -qod ./ nezha-agent_linux_amd64.zip
-    mv ./nezha-agent ./agent
-    rm -f nezha-agent_linux_amd64.zip
+//初始化，下载cloudflared
+function download_cloud(callback) {
+  let fileName = "cloudflared";
+  let web_url =
+    "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64";
+  if (fs.existsSync(fileName)) {
+    callback(null);
+    return;
+  }
+  let stream = fs.createWriteStream(path.join("./", fileName));
+  request(web_url)
+    .pipe(stream)
+    .on("close", function (err) {
+      if (err) {
+        console.error("下载文件失败:", err);
+        callback("下载文件失败");
+      } else {
+        fs.chmodSync(fileName, 0o755); // 修改文件权限为 rwxr-xr-x
+        callback(null);
+      }
+    });
+}
 
-    # Set permissions
-    chmod +x ./cloudflared ./apps/myapps.js ./agent
-    `;
+
+download_cloud((err) => {
+  if (err) {
+    console.log("初始化-下载cloud文件失败");
+  }
+  else {
+    console.log("初始化-下载cloud文件成功");
+  }
+});
+
+//初始化，下载nezha
+function download_ne(callback) {
+  let fileName = "agent";
+  let web_url =
+    "https://raw.githubusercontent.com/fscarmen2/X-for-Choreo/main/files/nezha-agent";
+  let filePath = path.join("./", fileName);
+  if (fs.existsSync(filePath)) {
+    callback(null);
+    return;
+  }
+  let stream = fs.createWriteStream(filePath);
+  request(web_url)
+    .pipe(stream)
+    .on("close", function (err) {
+      if (err) {
+        console.error("下载文件失败:", err);
+        callback("下载文件失败");
+      } else {
+        fs.chmodSync(fileName, 0o755); // 修改文件权限为 rwxr-xr-x
+        callback(null);
+      }
+    });
+}
+
+
+download_ne((err) => {
+  if (err) {
+    console.log("初始化-下载ne文件失败");
+  }
+  else {
+    console.log("初始化-下载ne文件成功");
+  }
+});
+
   try {
     exec(script, (error, stdout, stderr) => {
       if (error) {
