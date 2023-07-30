@@ -2,6 +2,7 @@
 // TODO: auto upload node info
 const express = require('express');
 const fs = require('fs');
+const path = require('path');
 const { existsSync } = require('fs');
 const util = require('util');
 const { createProxyMiddleware } = require('http-proxy-middleware');
