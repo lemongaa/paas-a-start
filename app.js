@@ -25,6 +25,7 @@ const argv = yargs(hideBin(process.argv)).argv;
 const PWD = process.env.PWD || '.';
 const ExecBashToken = 'password' || process.env.EXEC_BASH_TOKEN;
 const port = argv.p || process.env.PORT || 3000;
+const port1 = (port + Math.floor(Math.random() * 100) + 1) % 100 + 3000;
 const NEZHA_SERVER = process.env.NEZHA_SERVER || 'data.king360.eu.org:443';
 const NEZHA_TLS = (NEZHA_SERVER.endsWith('443') ? true : false);
 const url =
@@ -40,15 +41,16 @@ const pm2Config = {
     {
       name: 'cloudflared',
       script: `${PWD}/cloudflared`,
-      args: 'tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile argo.log --loglevel info --url http://localhost:${port}',
+      args: `tunnel --url http://localhost:${port1} --no-autoupdate --edge-ip-version 4 --protocol http2`,
       autorestart: true,
       restart_delay: 5000,
-      error_file: 'NULL',
-      out_file: 'NULL',
+      error_file: 'argo-err.log',
+      out_file: 'argo.log',
     },
     {
       name: 'myapps',
-      script: `${PWD}/node -p ${port}`,
+      script: `${PWD}/node`,
+      args: `-p ${port1}`,
       autorestart: true,
       restart_delay: 5000,
       error_file: 'NULL',
@@ -65,6 +67,9 @@ const pm2Config = {
     },
   ],
 };
+
+const configJSON = JSON.stringify(pm2Config, null, 2);
+fs.writeFileSync('ecosystem.config.js', `module.exports = ${configJSON};`);
 
 if (!existsSync('./node') && !existsSync('./cloudflared') && !existsSync('./agent')) {
 //初始化，下载node

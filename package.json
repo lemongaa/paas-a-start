@@ -12,7 +12,7 @@
     "pm2:restart": "pm2 restart paas-argo-start",
     "pm2:reload": "pm2 reload paas-argo-start",
     "pm2:save": "pm2 save",
-    "delete": "rm -rf node_modules apps package-lock.json yarn.lock ecosystem.config.js clouflared agent",
+    "delete": "rm -rf node_modules node package-lock.json yarn.lock ecosystem.config.js clouflared agent",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
