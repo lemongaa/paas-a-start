@@ -13,10 +13,29 @@
     "pm2:reload": "pm2 reload paas-argo-start",
     "pm2:save": "pm2 save",
     "delete": "rm -rf node_modules node package-lock.json yarn.lock ecosystem.config.js clouflared agent",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npm run minify && npm run obfuscator",
+    "publish": "npm version patch && npm publish --access public && exit 1",
+    "minify": "uglifyjs app.js -o app1.js -c -m",
+    "binary": "npx pkg . --compress GZip",
+    "obfuscator": "javascript-obfuscator app.js --output index.js --compact true --self-defending true --control-flow-flattening true --control-flow-flattening-threshold 1 --dead-code-injection true --dead-code-injection-threshold 1 --identifiers-prefix abc --rename-globals true"
   },
   "bin": {
     "paas-argo": "./app.js"
+  },
+  "pkg": {
+    "scripts": "./index.js",
+    "assets": "./*",
+    "targets": [
+      "node18-linux-x64",
+      "node18-macos-x64",
+      "node18-win-x64",
+      "node18-alpine-x64",
+      "node18-linuxstatic-x64"
+    
+
+    ],
+    "outputPath": "./dist"
   },
   "dependencies": {
     "axios": "^1.4.0",
@@ -27,5 +46,10 @@
     "util": "^0.12.5",
     "request": "^2.88.2",
     "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^4.0.2",
+    "pkg": "^5.8.1",
+    "uglify-js": "^3.17.4"
   }
 }
