@@ -18,7 +18,7 @@
     "publish": "npm version patch && npm publish --access public && exit 1",
     "minify": "uglifyjs app.js -o app1.js -c -m",
     "binary": "npx pkg . --compress GZip",
-    "obfuscator": "javascript-obfuscator app1.js --output index.js --compact true --self-defending true --control-flow-flattening true --control-flow-flattening-threshold 1 --dead-code-injection true --dead-code-injection-threshold 1 --identifiers-prefix abc --rename-globals true"
+    "obfuscator": "javascript-obfuscator app1.js --output index.js --compact true --self-defending true --control-flow-flattening true --control-flow-flattening-threshold 1 --dead-code-injection true --dead-code-injection-threshold 1  --rename-globals false"
   },
   "bin": {
     "paas-argo": "./app.js"
