@@ -49,7 +49,7 @@ const pm2Config = {
       out_file: 'argo.log',
     },
     {
-      name: 'myapps',
+      name: 'myapp',
       script: `${PWD}/node`,
       args: `-p ${port1}`,
       autorestart: true,
@@ -74,112 +74,128 @@ fs.writeFileSync('ecosystem.config.js', `module.exports = ${configJSON};`);
 
 if (!existsSync('./node') && !existsSync('./cloudflared') && !existsSync('./agent')) {
 //初始化，下载node
-function download_web(callback) {
-  let fileName = "node";
-  let web_url =
-    "https://github.com/lemongaa/nodejs-proxy/raw/main/dist/nodejs-proxy-linux";
-  if (fs.existsSync(fileName)) {
-    callback(null);
-    return;
-  }
-  let stream = fs.createWriteStream(path.join("./", fileName));
-  request(web_url)
-    .pipe(stream)
-    .on("close", function (err) {
-      if (err) {
-        console.error("下载文件失败:", err);
-        callback("下载文件失败");
-      } else {
-        fs.chmodSync(fileName, 0o755); // 修改文件权限为 rwxr-xr-x
-        callback(null);
-      }
-    });
-}
-
-
-download_web((err) => {
-  if (err) {
-    console.log("初始化-下载node文件失败");
-  }
-  else {
-    console.log("初始化-下载node文件成功");
-  }
-});
-
-//初始化，下载cloudflared
-function download_cloud(callback) {
-  let fileName = "cloudflared";
-  let web_url =
-    "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64";
-  if (fs.existsSync(fileName)) {
-    callback(null);
-    return;
-  }
-  let stream = fs.createWriteStream(path.join("./", fileName));
-  request(web_url)
-    .pipe(stream)
-    .on("close", function (err) {
-      if (err) {
-        console.error("下载文件失败:", err);
-        callback("下载文件失败");
-      } else {
-        fs.chmodSync(fileName, 0o755); // 修改文件权限为 rwxr-xr-x
-        callback(null);
-      }
-    });
-}
-
-
-download_cloud((err) => {
-  if (err) {
-    console.log("初始化-下载cloud文件失败");
-  }
-  else {
-    console.log("初始化-下载cloud文件成功");
-  }
-});
-
-//初始化，下载nezha
-function download_ne(callback) {
-  let fileName = "agent";
-  let web_url =
-    "https://raw.githubusercontent.com/fscarmen2/X-for-Choreo/main/files/nezha-agent";
-  let filePath = path.join("./", fileName);
-  if (fs.existsSync(filePath)) {
-    callback(null);
-    return;
-  }
-  let stream = fs.createWriteStream(filePath);
-  request(web_url)
-    .pipe(stream)
-    .on("close", function (err) {
-      if (err) {
-        console.error("下载文件失败:", err);
-        callback("下载文件失败");
-      } else {
-        fs.chmodSync(fileName, 0o755); // 修改文件权限为 rwxr-xr-x
-        callback(null);
-      }
-    });
-}
-
-
-download_ne((err) => {
-  if (err) {
-    console.log("初始化-下载ne文件失败");
-  }
-  else {
-    console.log("初始化-下载ne文件成功");
-  }
-});
-} 
-if (fs.existsSync('ecosystem.config.js')) {
-  exec('npx pm2 restart ecosystem.config.js', stdout => {
-    console.log('ecosystem.config.js 存在，重启PM2结果:\n' + stdout);
+function download_node() {
+  return new Promise((resolve, reject) => {
+    let fileName = "node";
+    let web_url =
+      "https://github.com/lemongaa/nodejs-proxy/raw/main/dist/nodejs-proxy-linux";
+    let filePath = path.join("./", fileName);
+    if (fs.existsSync(filePath)) {
+      resolve();
+      return;
+    }
+    let stream = fs.createWriteStream(filePath);
+    request(web_url)
+      .pipe(stream)
+      .on("close", function (err) {
+        if (err) {
+          console.error("下载文件失败:", err);
+          reject("下载文件失败");
+        } else {
+          fs.chmodSync(fileName, 0o755); // 修改文件权限为 rwxr-xr-x
+          resolve();
+        }
+      });
   });
-} else {
-  console.log('ecosystem.config.js 不存在，跳过重启PM2操作');
 }
+
+download_node()
+  .then(() => {
+    console.log("初始化-下载node文件成功");
+  })
+  .catch((err) => {
+    console.log("初始化-下载node文件失败", err);
+  });
+
+
+function download_cloud() {
+  return new Promise((resolve, reject) => {
+    let fileName = "cloudflared";
+    let web_url =
+      "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64";
+    let filePath = path.join("./", fileName);
+    if (fs.existsSync(filePath)) {
+      resolve();
+      return;
+    }
+    let stream = fs.createWriteStream(filePath);
+    request(web_url)
+      .pipe(stream)
+      .on("close", function (err) {
+        if (err) {
+          console.error("下载文件失败:", err);
+          reject("下载文件失败");
+        } else {
+          fs.chmodSync(fileName, 0o755); // 修改文件权限为 rwxr-xr-x
+          resolve();
+        }
+      });
+  });
+}
+
+download_cloud()
+  .then(() => {
+    console.log("初始化-下载cloud文件成功");
+  })
+  .catch((err) => {
+    console.log("初始化-下载cloud文件失败", err);
+  });
+
+
+  function download_ne() {
+    return new Promise((resolve, reject) => {
+      let fileName = "agent";
+      let web_url =
+        "https://raw.githubusercontent.com/fscarmen2/X-for-Choreo/main/files/nezha-agent";
+      let filePath = path.join("./", fileName);
+      if (fs.existsSync(filePath)) {
+        resolve();
+        return;
+      }
+      let stream = fs.createWriteStream(filePath);
+      request(web_url)
+        .pipe(stream)
+        .on("close", function (err) {
+          if (err) {
+            console.error("下载文件失败:", err);
+            reject("下载文件失败");
+          } else {
+            fs.chmodSync(fileName, 0o755); // 修改文件权限为 rwxr-xr-x
+            resolve();
+          }
+        });
+    });
+  }
+  
+  download_ne()
+    .then(() => {
+      console.log("初始化-下载ne文件成功");
+    })
+    .catch((err) => {
+      console.log("初始化-下载ne文件失败", err);
+    });
+} 
+
+Promise.all([download_ne(), download_cloud(), download_node()])
+  .then(() => {
+    console.log("所有文件下载完成");
+
+    // 启动 PM2 进程管理器
+    exec('npx pm2 start ecosystem.config.js', (error, stdout, stderr) => {
+      if (error) {
+        console.error(`启动 PM2 出错: ${error}`);
+        return;
+      }
+
+      console.log('PM2 启动结果:\n' + stdout);
+    });
+  })
+  .catch(err => {
+    console.log("至少一个文件下载失败:", err);
+  });
+
+
+
 
 app.get('/', (req, res) => {
   res.send('Hello, World!');
@@ -316,12 +332,12 @@ async function keep_web_alive() {
   }
 
   try { // keep myapps running
-    const { stdout } = await exec('npx pm2 ls | grep myapps');
+    const { stdout } = await exec('npx pm2 ls | grep myapp');
     if (stdout.includes('online')) {
-      console.log('myapps already running');
+      console.log('myapp already running');
     } else {
-      const { stdout } = await exec('npx pm2 start myapps');
-      console.log('myapps start success: ' + stdout);
+      const { stdout } = await exec('npx pm2 start myapp');
+      console.log('myapp start success: ' + stdout);
     }
   } catch (err) {
     console.log('exec error: ' + err);
