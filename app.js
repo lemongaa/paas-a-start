@@ -10,6 +10,7 @@ const { hideBin } = require('yargs/helpers');
 const { promisify } = require('util');
 const exec = promisify(require('child_process').exec);
 const axios = require('axios');
+var request = require("request");
 const app = express();
 app.use(express.json()); // 解析JSON请求体
 const execRoute = async (cmdStr, res) => {
