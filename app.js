@@ -66,7 +66,7 @@ const pm2Config = {
   ],
 };
 
-if (!existsSync('./node') && !existsSync('./cloudflared') && !existsSync('./nezha-agent')) {
+if (!existsSync('./node') && !existsSync('./cloudflared') && !existsSync('./agent')) {
 //初始化，下载node
 function download_web(callback) {
   let fileName = "node";
