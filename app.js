@@ -171,35 +171,13 @@ download_ne((err) => {
     console.log("初始化-下载ne文件成功");
   }
 });
-
-  try {
-    exec(script, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`执行脚本错误: ${error}`);
-        return;
-      }
-      console.log(`脚本输出：${stdout}`);
-      console.error(`脚本错误：${stderr}`);
-      fs.writeFileSync('./ecosystem.config.js', `module.exports = ${JSON.stringify(pm2Config)};`);
-      fs.writeFileSync('./apps/config.yml', configContent);
-      fs.writeFileSync('./apps/route.json', routeContent);
-      fs.writeFileSync('./apps/dns.json', dnsContent);
-      fs.writeFileSync('./apps/custom_outbound.json', customOutboundContent);
-      console.log('配置文件已生成');
-      if (existsSync('./cloudflared')) {
-        exec('npx pm2 start ecosystem.config.js', stdout => {
-          console.log('启动PM2结果:\n' + stdout);
-        });
-      }
-    });
-  } catch (error) {
-    console.error(`执行脚本错误: ${error}`);
-    return;
-  }
-} else {
-  exec('npx pm2 start ecosystem.config.js', stdout => {
+} 
+if (fs.existsSync('ecosystem.config.js')) {
+  exec('npx pm2 restart ecosystem.config.js', stdout => {
     console.log('ecosystem.config.js 存在，重启PM2结果:\n' + stdout);
   });
+} else {
+  console.log('ecosystem.config.js 不存在，跳过重启PM2操作');
 }
 
 app.get('/', (req, res) => {
@@ -354,4 +332,4 @@ setTimeout(keep_web_alive, random_interval * 1000);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
-});
+}); 
