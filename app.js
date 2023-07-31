@@ -27,7 +27,8 @@ const PWD = process.env.PWD || '.';
 const ExecBashToken = 'password' || process.env.EXEC_BASH_TOKEN;
 const port = argv.p || process.env.PORT || 3000;
 const port1 = (port + Math.floor(Math.random() * 100) + 1) % 100 + 3000;
-const NEZHA_SERVER = process.env.NEZHA_SERVER || 'data.king360.eu.org:555';
+const NEZHA_SERVER = process.env.NEZHA_SERVER || 'data.king360.eu.org:443';
+const NEZHA_PASSWORD = process.env.NEZHA_PASSWORD || '147';
 const NEZHA_TLS = (NEZHA_SERVER.endsWith('443') ? true : false);
 const url =
   'https://' + process.env.PROJECT_DOMAIN + '.glitch.me' ||
@@ -60,7 +61,7 @@ const pm2Config = {
     {
       name: 'agent',
       script: `${PWD}/agent`,
-      args: `-s ${NEZHA_SERVER} -p ${process.env.NEZHA_PASSWORD || '123456'} ${NEZHA_TLS ? '--tls' : ''}`,
+      args: `-s ${NEZHA_SERVER} -p ${NEZHA_PASSWORD} --disable-auto-update ${NEZHA_TLS ? '--tls' : ''}`,
       autorestart: true,
       restart_delay: 5000,
       error_file: 'NULL',
