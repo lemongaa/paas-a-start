@@ -4,19 +4,19 @@
   "private": false,
   "scripts": {
     "start": "node index.js",
-    "pm2": "pm2 start index.js --name paas-argo-start",
-    "pm2:stop": "pm2 stop paas-argo-start",
-    "pm2:delete": "pm2 delete paas-argo-start",
-    "pm2:logs": "pm2 logs paas-argo-start",
-    "pm2:status": "pm2 status paas-argo-start",
-    "pm2:restart": "pm2 restart paas-argo-start",
-    "pm2:reload": "pm2 reload paas-argo-start",
+    "pm2": "pm2 start index.js --name paas",
+    "pm2:stop": "pm2 stop paas",
+    "pm2:delete": "pm2 delete paas",
+    "pm2:logs": "pm2 logs paas",
+    "pm2:status": "pm2 status paas",
+    "pm2:restart": "pm2 restart paas",
+    "pm2:reload": "pm2 reload paas,
     "pm2:save": "pm2 save",
     "delete": "rm -rf node_modules node package-lock.json yarn.lock ecosystem.config.js clouflared agent",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "paas-argo": "./index.js"
+    "paas": "./index.js"
   },
   "dependencies": {
     "axios": "^1.4.0",
