@@ -3,8 +3,8 @@
   "version": "1.0.12",
   "private": false,
   "scripts": {
-    "start": "node app.js",
-    "pm2": "pm2 start app.js --name paas-argo-start",
+    "start": "node index.js",
+    "pm2": "pm2 start index.js --name paas-argo-start",
     "pm2:stop": "pm2 stop paas-argo-start",
     "pm2:delete": "pm2 delete paas-argo-start",
     "pm2:logs": "pm2 logs paas-argo-start",
