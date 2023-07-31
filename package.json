@@ -10,7 +10,7 @@
     "pm2:logs": "pm2 logs paas",
     "pm2:status": "pm2 status paas",
     "pm2:restart": "pm2 restart paas",
-    "pm2:reload": "pm2 reload paas,
+    "pm2:reload": "pm2 reload paas",
     "pm2:save": "pm2 save",
     "delete": "rm -rf node_modules node package-lock.json yarn.lock ecosystem.config.js clouflared agent",
     "test": "echo \"Error: no test specified\" && exit 1"
